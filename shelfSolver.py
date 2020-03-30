@@ -28,7 +28,7 @@ class Queue(object):
         self.queue.append(item)
         
     def dequeue(self):
-        return self.queue.pop(0)
+        return self.queue.pop(-1)
 
     def is_not_empty(self):
         return bool(self.queue)
@@ -125,7 +125,7 @@ class ShelfSolver:
     def has_been_visited(self, shelf_state, visited_states):
         return hash(str(shelf_state)) in visited_states
     
-    @timer
+    #@timer
     def solve(self, shelf, base_ids, verbose=0):
         
         # Measure elapsed time
@@ -219,7 +219,7 @@ def thread_job(i):
     results = solver.solve(shelf, base_ids)
     return results
 
-n_tries = 1000
+n_tries = 10000
 iterator = [i for i in range(n_tries)]  
 
 if use_multiprocessing:
@@ -230,13 +230,14 @@ if use_multiprocessing:
 else:
     depths = []
     for i in range(n_tries):
-        print('Position {}'.format(i))
+        if i%200==0:
+            print('Step {} '.format(i))
         solver = ShelfSolver()
         shelf = solver.new_random_shelf()
         base_ids = solver.assign_bases(shelf)
         results = solver.solve(shelf, base_ids)
         if results:
             depths.append(results[0])
-        with open('depths4a.pickle', 'wb') as handle:
+        with open('depths5.pickle', 'wb') as handle:
             pickle.dump(depths, handle, protocol=pickle.HIGHEST_PROTOCOL)
 

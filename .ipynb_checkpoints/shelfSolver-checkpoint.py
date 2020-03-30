@@ -28,7 +28,7 @@ class Queue(object):
         self.queue.append(item)
         
     def dequeue(self):
-        return self.queue.pop(0)
+        return self.queue.pop(-1)
 
     def is_not_empty(self):
         return bool(self.queue)
