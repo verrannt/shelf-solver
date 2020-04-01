@@ -1,0 +1,61 @@
+# Pseudocode of the solve-function
+
+function assign_correct_rows(state):
+
+        Step A. First assign rows to most prominent color occurences.
+        
+        for each row in the shelf:
+            count no. of occurences of every color in this row and 
+            collect the most prominent one
+            
+            if there is only one most prominent color:
+                if this color does not yet have an assigned row:
+                    assign this row as correct row for this color
+                else if this color already has an assigned row:
+                    assign 'None' to this row
+            if there are more than one:
+                assign 'None' to this row
+            
+            
+        Step B. For the leftover colors assign them randomly.
+        
+        get the rows that were assigned 'None'
+        get the colors that do not have a correct row yet
+        for each of the leftover colors:
+            randomly assign it to one of the rows
+        
+        return the correct row assignments
+
+function solve(start_state):
+        
+        get the row assignments from the assign_correct_rows function
+        create an empty stack
+        push the start state to the stack
+                
+        while the stack is not empty:
+            
+            take the last element from the stack
+            
+            if the state is a final state:
+                return the depth of that state
+                
+            else compute the children of that state:
+            
+                for each item in the state:
+
+                    if it is an empty space:
+                        continue to next loop
+
+                    if it is in the correct row:
+                        continue to next loop
+
+                    else if it is not empty and in the wrong row:
+                        
+                        compute all possible child states that put the item
+                        into the correct row by finding the empty spaces in
+                        the correct row
+                        
+                        for each of the possible child states:
+                            if the child state has not been visited:
+                                push the child state to the stack
+
