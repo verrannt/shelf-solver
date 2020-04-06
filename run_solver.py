@@ -15,14 +15,14 @@ depths = []
 solver = shelfsolver.ShelfSolver()
 
 use_multiprocessing = True
-n_tries_per_core = 100
+n_tries_per_core = 200
 task = 3
 
 def thread_job(coreID):
     core_results = []
     shelfgen = shelfsolver.ShelfGenerator()
     for i in range(n_tries_per_core+1):
-        if i%4==0:
+        if i%20==0:
             print('\nCore {}, Step {}'.format(coreID, i))
             print('Successful runs so far: {}'.format(len(core_results)))
             with open('collected_depths/TEMP_task{}_core{}.pickle'
@@ -51,7 +51,7 @@ def run_script():
     for result_from_core in collected_results:
         for entry in result_from_core:
             overall_results.append(entry)
-    with open('collected_depths/task3_multiproc.pickle', 'wb') as handle:
+    with open('collected_depths/task3_multiproc_2.pickle', 'wb') as handle:
         pickle.dump(overall_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     # Remove temporary files

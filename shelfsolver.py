@@ -301,7 +301,7 @@ class ShelfSolver:
         try:
             return min(collected_depths)
         except ValueError:
-            print('Fatal: No solution found.')
+            if verbose: print('Fatal: No solution found.')
     
     def solve_unique_per_row(self, shelf, verbose=0, search_type="stack"):
         """
