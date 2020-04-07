@@ -16,7 +16,7 @@ solver = shelfsolver.ShelfSolver()
 
 use_multiprocessing = True
 n_tries_per_core = 400
-task = 3
+task = 2
 
 def thread_job(coreID):
     core_results = []
