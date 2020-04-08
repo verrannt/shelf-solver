@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 
-from utils.tree_search import Node, Queue, Tree
+from utils.tree_search import Node, Tree
 from utils.timer_decorator import timer
 
 class ShelfGenerator:
