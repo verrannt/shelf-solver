@@ -254,16 +254,6 @@ class ShelfSolver:
                 print("Current score: {} | Depth: {} | Length of tree: {}\r"
                       .format(current_score, node.depth, len(tree)), end="")
 
-            if current_score == 60:
-                if verbose: print('\nSolution found!')
-                if collect:
-                    collected_depths.append(node.depth)
-                    n_solutions_found += 1
-                    if time.time()-start_time>=timeout or n_solutions_found>=5:
-                        return min(collected_depths)
-                else:
-                    return node.state, node.depth
-            
             for rowID, row in enumerate(state):
                 for colID, item in enumerate(row):
                     for _rowID, _row in enumerate(state):
@@ -271,12 +261,25 @@ class ShelfSolver:
                             continue
                         for _colID, _item in enumerate(_row):
                             if _item == 0: # if empty space
-                                possible_state = self.move_item(state, item, 
-                                        old_position=(rowID,colID), 
+                                possible_state = self.move_item(state, item,
+                                        old_position=(rowID,colID),
                                         new_position=(_rowID, _colID))
                                 possible_state_score = calc_score_of_state(possible_state)
-                                if possible_state_score > current_score and \
-                                not self.has_been_visited(possible_state, visited_states):
+                                
+                                if possible_state_score == 60 and \
+                                        not self.has_been_visited(possible_state, visited_states):
+                                    visited_states.append(hash(str(possible_state)))
+                                    if verbose: print('\nSolution found!')
+                                    if collect:
+                                        collected_depths.append(node.depth+1)
+                                        n_solutions_found += 1
+                                        if time.time()-start_time>=timeout or n_solutions_found>=5:
+                                            return min(collected_depths)
+                                    else:
+                                        return possible_state, node.depth+1
+                                
+                                elif possible_state_score > current_score and \
+                                        not self.has_been_visited(possible_state, visited_states):
                                     visited_states.append(hash(str(possible_state)))
                                     child_node = Node(possible_state, parent=node)
                                     tree.add(child_node)
