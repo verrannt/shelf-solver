@@ -84,3 +84,28 @@ function solve(start_state):
                         if score > current state's score
                             add move to visited states
                             add move to stack
+                            
+# Scoring system for task 2
+set overall score to 0
+for each row in the shelf
+    if row is all empty
+        add 20 to overall score
+    else
+        count colors and shapes
+        count multiple occurences (conflicts) of all colors and shapes
+        compute row score by adding color and shape occurences and subtracting the color and shape conflicts twice
+        add row score to overall score
+        
+# Scoring system for task 3
+set overall score to 0
+for each row in the shelf
+    if row is all empty
+        add 10 to overall score
+    else
+        count colors
+        count multiple occurences (conflicts) of colors
+        compute row score as color occurences minus 2 times the color conflicts
+        add row score to overall score
+for each column in the shelf
+    compute the same score as for rows
+    add that to the overall score
