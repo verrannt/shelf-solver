@@ -184,6 +184,12 @@ class ShelfSolver:
         else:
             return 0
     
+    def one_color_per_row_score(self, state):
+        score = 0
+        for row in state:
+            n_zeros = len([i for i in row if i==0])
+            
+    
     def unique_per_row_score(self, state):
         score = 0
         for row in state:
@@ -266,7 +272,9 @@ class ShelfSolver:
             
             current_score = calc_score_of_state(state)
             
-            if verbose: print("Current score: {} | Depth: {} | Length of tree: {}\r".format(current_score, node.depth, len(tree)), end="")
+            if verbose: 
+                print("Current score: {} | Depth: {} | Length of tree: {}\r"
+                      .format(current_score, node.depth, len(tree)), end="")
 
             if current_score == 60:
                 if verbose: print('\nSolution found!')
