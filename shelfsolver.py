@@ -10,14 +10,14 @@ class ShelfGenerator:
         self.shelf_size = shelf_size
         self.n_shapes = n_shapes
         self.n_colors = n_colors
-    
+
     def new_random_shelf(self, seed=None):
         ''' Return a new random shelf matrix '''
-        if seed: 
+        if seed:
             np.random.seed(seed)
         # Create indices
         indices = np.random.choice(
-            self.shelf_size[0]*self.shelf_size[1], 
+            self.shelf_size[0]*self.shelf_size[1],
             size = self.n_shapes*self.n_colors,
             replace=False)
         # Create empty shelf
@@ -31,165 +31,143 @@ class ShelfGenerator:
         shelf = np.asarray(shelf, dtype=int)
         #shelf = np.asarray(shelf, dtype=str)
         return shelf
-    
+
 class ShelfSolver:
-    def __init__(self, shelf_size=(5,5), n_shapes=4, n_colors=4):
-        self.shelf_size = shelf_size
-        self.n_shapes = n_shapes
-        self.n_colors = n_colors
-    
-    def assign_bases(self, shelf):
-        base_ids = dict()
-        for row_id, row in enumerate(shelf):
-            color_counts = self.count_colors_in_row(row)
-            colors_with_highest_count = np.argwhere(
-                color_counts == np.max(color_counts))
-            if colors_with_highest_count.shape[0] == 1:
-                if colors_with_highest_count[0,0]+1 in base_ids.values(): 
-                    base_ids[row_id] = None # if color already has base set None
-                else:
-                    base_ids[row_id] = colors_with_highest_count[0,0]+1
-            elif colors_with_highest_count.shape[0] > 1:
-                base_ids[row_id] = None
-                
-        # For the leftover colors assign them randomly
-        leftover_row_ids = np.argwhere(np.array(list(base_ids.values()))==None)
-        leftover_row_ids = [ri[0] for ri in leftover_row_ids] 
-        leftover_colors = [color for color in range(1, self.n_colors+1) if color not in list(base_ids.values())]
-        assign_ids = np.random.choice(a=leftover_row_ids, size=len(leftover_colors), replace=False)
-        for i in range(len(leftover_colors)):
-            base_ids[assign_ids[i]] = leftover_colors[i]
-    
-        return base_ids
-    
-    def count_colors_in_row(self, row):
-        colors_instances = np.zeros(self.n_colors)
-        for ob in row:
-            if ob != 0:
-                color = self.get_color(ob)
-                colors_instances[color-1] += 1
-        return colors_instances
- 
-    def is_in_correct_base(self, item, base_ids, row_idx):
-        return (base_ids[row_idx] == self.get_color(item))
+    def __init__(self):
+        pass
     
     def move_item(self, shelf, obj, old_position, new_position):
         new_shelf = shelf.copy()
         new_shelf[old_position] = 0
         new_shelf[new_position] = obj
         return new_shelf
-    
-    def is_final_state(self, base_ids, shelf_state):
-        is_final_state = np.ones(shelf_state.shape, dtype=bool)
-        for row_idx, row in enumerate(shelf_state):
-            for col_idx, item in enumerate(row):
-                if item != 0:
-                    is_final_state[row_idx,col_idx] = \
-                       self.is_in_correct_base(item, base_ids, row_idx)
-                else:
-                    continue
-        return is_final_state.all() # all must be True
-    
+
     def has_been_visited(self, shelf_state, visited_states):
         return hash(str(shelf_state)) in visited_states
-    
-    def solve(self, shelf, base_ids, verbose=0):
 
-        # Enqueue start state
-        root_node = Node(shelf)
-        queue = Queue()
-        queue.enqueue(root_node)
+    def solve_task_1(self, shelf, search_type="stack"):
+
+        # Functions only needed for task 1 ---------
+
+        def count_colors_in_row(row):
+            colors_instances = np.zeros(n_colors)
+            for ob in row:
+                if ob != 0:
+                    color = self.get_color(ob)
+                    colors_instances[color-1] += 1
+            return colors_instances
+
+        def assign_bases(shelf):
+            base_ids = dict()
+            for row_id, row in enumerate(shelf):
+                color_counts = count_colors_in_row(row)
+                colors_with_highest_count = np.argwhere(
+                    color_counts == np.max(color_counts))
+                if colors_with_highest_count.shape[0] == 1:
+                    if colors_with_highest_count[0,0]+1 in base_ids.values():
+                        base_ids[row_id] = None # if color already has base set None
+                    else:
+                        base_ids[row_id] = colors_with_highest_count[0,0]+1
+                elif colors_with_highest_count.shape[0] > 1:
+                    base_ids[row_id] = None
+
+            # For the leftover colors assign them randomly
+            leftover_row_ids = np.argwhere(np.array(list(base_ids.values()))==None)
+            leftover_row_ids = [ri[0] for ri in leftover_row_ids]
+            leftover_colors = [color for color in range(1, n_colors+1) if color not in list(base_ids.values())]
+            assign_ids = np.random.choice(a=leftover_row_ids, size=len(leftover_colors), replace=False)
+            for i in range(len(leftover_colors)):
+                base_ids[assign_ids[i]] = leftover_colors[i]
+
+            return base_ids
+
+        def is_in_correct_base(item, base_ids, row_idx):
+            return (base_ids[row_idx] == self.get_color(item))
+
+        def is_final_state(base_ids, shelf_state):
+            is_final_state = np.ones(shelf_state.shape, dtype=bool)
+            for row_idx, row in enumerate(shelf_state):
+                for col_idx, item in enumerate(row):
+                    if item != 0:
+                        is_final_state[row_idx,col_idx] = \
+                           is_in_correct_base(item, base_ids, row_idx)
+                    else:
+                        continue
+            return is_final_state.all() # all must be True
+
+        # ------------------------------------------
+
+        # Features of the shelf
+        n_rows = shelf.shape[0]
+        n_cols = shelf.shape[1]
+        color_list = list(set([self.get_color(item) for row in shelf for item in row]))
+        color_list.pop(0)
+        n_colors = len(color_list)
         
+        # Assign the correct bases
+        base_ids = assign_bases(shelf)
+
+        # Add start state
+        root_node = Node(shelf)
+        tree = Tree(search_type)
+        tree.add(root_node)
+
         # Keep track of visited states
         visited_states = []
         
-        # Iterate through queue
-        while queue.is_not_empty():
-            
-            node = queue.dequeue()
-            if self.is_final_state(base_ids, node.state):
+        # Iterate through tree
+        while tree.is_not_empty():
+
+            node = tree.get()
+            if is_final_state(base_ids, node.state):
                 return node.state, node.depth
-            
-            # Create children of node and enqueue them
-            # by iterating through items
-            for i in range(self.shelf_size[0]): # iterate thru row
-                for j in range(self.shelf_size[1]): # iterate thru col
-                    
+
+            # Create children of node and add them 
+            # to tree by iterating through items
+            for i in range(n_rows): # iterate thru row
+                for j in range(n_cols): # iterate thru col
+
                     item = node.state[i,j]
                     if item == 0: # if empty space
                         continue  # do nothing
-                        
+
                     # If item not in correct base
-                    if not self.is_in_correct_base(item, base_ids, i):
+                    if not is_in_correct_base(item, base_ids, i):
 
                         # Find correct row
                         correct_row = list(base_ids.values())\
                             .index(self.get_color(item))
-                        
+
                         # Find empty spaces in correct row
                         empty_space_ids = np.argwhere(
                             node.state[correct_row]==0)
-                        
-                        # Enqueue all states that move item into empty
+
+                        # Add all states that move item into empty
                         # space in correct row
                         for empty_space_id in empty_space_ids:
                             new_state = self.move_item(
-                                node.state, item, (i,j), 
+                                node.state, item, (i,j),
                                 (correct_row, empty_space_id))
                             if not self.has_been_visited(new_state, visited_states):
                                 visited_states.append(hash(str(new_state)))
                                 child_node = Node(new_state, parent=node)
-                                queue.enqueue(child_node)
+                                tree.add(child_node)
                     else:
                         continue
-            print("Length of queue: {}\r".format(len(queue)), end="")
+            print("Length of tree: {}\r".format(len(tree)), end="")
 
-            if len(queue) >= 20000:
+            if len(tree) >= 20000:
                 print("Queued 20k items, terminating.")
                 break
-        
-        return list(np.unique(collected_depths))
-            
- 
-    def row_has_all_uniques(self, row):
-        if set(row) == {0}:
-            return True
-        colors, shapes = zip(*[[self.get_color(item), self.get_shape(item)] for item in row if item != 0])
-        return set(colors) == set(range(5)) \
-             & set(shapes) == set(range(5))
-    
-    def count_item_conflicts_in_row(self, item, row):
-        if item == 0:
-            return 0
-        try:
-            row.pop(row.index(item))
-        except ValueError:
-            pass
-        n_conflicts = 0
-        colors, shapes = zip(*[(self.get_color(item), self.get_shape(item)) for item in row])
-        n_conflicts += colors.count(self.get_color(item))
-        n_conflicts += shapes.count(self.get_shape(item))
-        return n_conflicts
 
-    def is_final_unique_rows_state(self, state):
-        is_final = True
-        for row in state:
-            row_wo_zeros = [e for e in row if e != 0]
-            if (len(row_wo_zeros) != 4) or (not self.row_has_all_uniques(row)):
-                return False
-    
+        return list(np.unique(collected_depths))
+
     def relu(self, value):
-        if value>=0: 
+        if value>=0:
             return value
         else:
             return 0
-    
-    def one_color_per_row_score(self, state):
-        score = 0
-        for row in state:
-            n_zeros = len([i for i in row if i==0])
-            
-    
+
     def unique_per_row_score(self, state):
         score = 0
         for row in state:
@@ -227,9 +205,9 @@ class ShelfSolver:
                 n_colors = len(set(colors))
                 n_color_conflicts = 5 - n_colors - self.relu(n_zeros - 1)
                 score += n_colors - 2*n_color_conflicts
-                
+
         return score
-    
+
     def solve_task(self, shelf, task, verbose=0, search_type="stack", collect=False, timeout=30):
         """
         Pseudocode: Max score algorithm
