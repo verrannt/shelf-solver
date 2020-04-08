@@ -227,12 +227,13 @@ class ShelfSolver:
                             if score of possible_move >= current score
                                 append this move to stack
         """
-        
+        if task == 1:
+            return self.solve_task_1(shelf, search_type)
         if task == 2:
             calc_score_of_state = self.unique_per_row_score
         if task == 3:
             calc_score_of_state = self.unique_per_row_and_col_score
-                        
+
         root_node = Node(shelf)
         tree = Tree(search_type)
         tree.add(root_node)
@@ -240,17 +241,17 @@ class ShelfSolver:
         collected_depths = []
         n_solutions_found = 0
         start_time = time.time()
-        
+
         while tree.is_not_empty():
             if time.time()-start_time>=timeout: # exit if takes too long
                 break
-                
+
             node = tree.get()
             state = node.state.copy()
-            
+
             current_score = calc_score_of_state(state)
-            
-            if verbose: 
+
+            if verbose:
                 print("Current score: {} | Depth: {} | Length of tree: {}\r"
                       .format(current_score, node.depth, len(tree)), end="")
 
@@ -286,121 +287,18 @@ class ShelfSolver:
                                 break # only one empty space needed
                             else:
                                 continue
-                
+
         try:
             return min(collected_depths)
         except ValueError:
             if verbose: print('Fatal: No solution found.')
-    
-    def solve_unique_per_row(self, shelf, verbose=0, search_type="stack"):
-        """
-        Pseudo code for this algorithm
-        
-        add start state to tree
-        while tree not empty:
-            get state
-            for row in state
-                if row is final
-                    continue
-                else
-                    for item in row
-                        if item has conflicts in row
-                            find row where it has no conflicts and append
-                            state that moves it to first empty space
-                        else 
-                            continue
-                    
-        Possibility II:
-        add start state to tree
-        while tree not empty:
-            get state
-            find item with max conflicts
-            move it to position with min conflicts
-            append that state
-                                           
-        """
-        root_node = Node(shelf)
-        tree = Tree(search_type)
-        tree.add(root_node)
-        visited_states = []
-        
-        while tree.is_not_empty():
-            node = tree.get()
-            
-            if verbose: prints("\nCurrent state:\n{}".format(node.state))
-            
-            if self.is_final_unique_rows_state(node.state):
-                print("Solution found at depth", node.depth, "\n", node.state)
-                return node.state, node.depth
-            
-            # for each row
-            for i in range(len(node.state[0])):
-                if verbose: prints("= Row {} =".format(i))
 
-                # skip it if it is in final state
-                if self.row_has_all_uniques(node.state[i]):
-                    print("Row is final")
-                    if verbose: prints("  Row is unique, continuing …")
-                    continue
-                    
-                else:
-                    # for each item in the row
-                    for j in range(len(node.state[:,0])):
-                        item = node.state[i,j]
-                        if verbose: prints("  Item at ({},{}): {}".format(i,j,item))
-
-                        if self.count_item_conflicts_in_row(item, list(node.state[i].copy())):
-                            if verbose: prints("  Has conflicts in row {}, finding rows that fit".format(i))
-
-                            # find row that has no conflict
-                            for ii in range(len(node.state[0])):
-
-                                if i == ii:
-                                    if verbose: prints("    Row {} is origin row".format(ii))
-                                    continue
-
-                                if not self.count_item_conflicts_in_row(item, list(node.state[ii].copy())):
-                                    if verbose: prints("    Row {} has no conflicts with item {}".format(ii, item))
-                                    # see if there are empty spaces in that row
-                                    try: 
-                                        jj = np.argwhere(
-                                            node.state[ii]==0)[0,0]
-                                        if verbose: prints("      Trying to move item to ({},{})".format(ii,jj))
-                                    except IndexError:
-                                        if verbose: prints("      Row {} has no free spaces, skipping.".format(ii))
-                                        continue
-                                    # move item there
-                                    new_state = self.move_item(node.state, item, 
-                                        old_position=(i,j), 
-                                        new_position=(ii, jj))
-
-                                    # add to tree if not been visited
-                                    if not self.has_been_visited(new_state, visited_states):
-                                        visited_states.append(hash(str(new_state)))
-                                        child_node = Node(new_state, parent=node)
-                                        tree.add(child_node)
-                                        if verbose: prints("      New move:\n{}".format(new_state))
-                                        #break
-                                    else:
-                                        if verbose: prints("      Skipping move because it has been done before.")
-                                else:
-                                    if verbose: prints("    Row {} has conflicts with item {}, skipping.".format(ii, item))
-                        else:
-                            if verbose: prints("  … has no conflicts in row {}".format(i))
-                            continue
-                        #break
-                    #break
-    
-            print("Depth: {} | Length of tree: {}\r".format(node.depth, len(tree)), end="")
-        
-        print("Function finished without results.")
-    
     def get_color(self, item):
         return item//10
-    
+
     def get_shape(self, item):
         return item%10
-    
+
 def prints(string):
     print(string)
     time.sleep(.1)
