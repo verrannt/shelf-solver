@@ -1,4 +1,4 @@
-# Pseudocode of the solve-function
+# Pseudocode of task 1
 
 function assign_correct_rows(state):
 
@@ -59,3 +59,28 @@ function solve(start_state):
                             if the child state has not been visited:
                                 push the child state to the stack
 
+
+# Pseudocode of task 2 & 3
+
+function solve(start_state):
+
+    add start state to stack
+    
+    while the stack is not empty
+    
+        get the last element from stack
+        calculate score of the current state
+            
+        for each item in the state
+            for each row of the state
+                if row is same as current row of the item
+                    skip
+                else
+                    for each empty space of the row
+                        move item there
+                        calculate score of move
+                        if score is maximum possible
+                            return solution
+                        if score > current state's score
+                            add move to visited states
+                            add move to stack
