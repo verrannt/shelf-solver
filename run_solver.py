@@ -108,7 +108,7 @@ def run_script(use_multiprocessing, n_tries_per_core, task):
     for result_from_core in collected_results:
         for entry in result_from_core:
             overall_results.append(entry)
-    with open('collected_depths/task{}_latestrun.pickle'.format(task), 'wb') as handle:
+    with open('collected_depths/task{}.pickle'.format(task), 'wb') as handle:
         pickle.dump(overall_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # Remove temporary files
@@ -127,6 +127,8 @@ if __name__ == '__main__':
     use_multiprocessing = args.multiprocessing
     n_tries_per_core = args.tries_per_core
     task = args.task
+
+    os.makedirs('collected_depths/', exist_ok=True)
 
     if task not in [1,2,3]:
         raise ValueError('task must be 1, 2 or 3.')

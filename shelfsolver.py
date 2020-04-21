@@ -45,7 +45,7 @@ class ShelfSolver:
     def has_been_visited(self, shelf_state, visited_states):
         return hash(str(shelf_state)) in visited_states
 
-    def solve_task_1(self, shelf, search_type="stack"):
+    def solve_task_1(self, shelf, search_type="stack", verbose=0):
 
         # Functions only needed for task 1 ---------
 
@@ -154,10 +154,10 @@ class ShelfSolver:
                                 tree.add(child_node)
                     else:
                         continue
-            print("Length of tree: {}\r".format(len(tree)), end="")
+            if verbose: print("Length of tree: {}\r".format(len(tree)), end="")
 
             if len(tree) >= 20000:
-                print("Queued 20k items, terminating.")
+                if verbose: print("Queued 20k items, terminating.")
                 break
 
         return list(np.unique(collected_depths))
