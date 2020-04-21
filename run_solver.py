@@ -1,3 +1,40 @@
+###########################################################################
+#
+# Run the shelf solver script a specified number of times on one of three
+# tasks and collect the depths (i.e. minimal number of moves to find a 
+# solution):
+#
+# - Task 1: Sort object so that each row has only objects of one color
+# - Task 2: Sort objects so that each row has all the unique colors and all 
+#   the unique shapes once 
+# - Task 3: Sort objects so that each row and column has each of the four 
+#   colors once
+#
+# The task can be specified by passing 1, 2 or 3 to the --task flag when
+# calling this script.
+# Furthermore, multiprocessing can be enabled, which puts the amount of 
+# instances specified using the --tries_per_core flag (default 100)on each
+# available CPU thread. If using only one thread, tries_per_core is the 
+# total amount of randomly generated shelves that will be solved for, else
+# it is the max amount of threads * tries_per_core.
+#
+# The script saves the collected depths to a directory 'collected_depths/'
+# at the location it is called from. If this dir does not exist, it will 
+# be created. 
+# !!!CAREFUL!!!: If this dir exists and has contents 'task1.pickle', 
+# 'task2.pickle' etc. those will be overridden by the new files.
+#
+# Example usage:
+# $ python run_solver.py --task 1 --tries_per_core 250 --multiprocessing 
+#
+# -------------------------------------------------------------------------
+#
+# @author Pascal Schroeder
+# @github verrannt
+# @date   2020-04-20
+#
+###########################################################################
+
 import argparse
 import os
 import sys
@@ -29,8 +66,6 @@ def getArgs(args = sys.argv[1:]):
 
     return parser.parse_args(args)
 
-
-####################################
 
 depths = []
 solver = shelfsolver.ShelfSolver()
